@@ -9,7 +9,7 @@ describe "Migration Tasks" do
   context 'db:migrate' do
     it "creates the expected column" do
       expect(@adapter_without_lock.tables).not_to include("test_rake")
-      ActiveRecord::Migrator.migrate("spec/fixtures/db/migrate")
+      ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate").migrate
       expect(@adapter_without_lock.tables).to include("test_rake")
     end
   end
@@ -23,14 +23,14 @@ describe "Migration Tasks" do
 
     context 'db:rollback' do
       it "drops the expected table" do
-        ActiveRecord::Migrator.rollback("spec/fixtures/db/migrate", 1)
+        ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate").rollback(1)
         expect(@adapter_without_lock.tables).not_to include("test_rake")
       end
     end
 
     context 'db:migrate:down' do
       it "drops the expected table" do
-        ActiveRecord::Migrator.run(:down, "spec/fixtures/db/migrate", 20140108194650)
+        ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate").run(:down, 20140108194650)
         expect(@adapter_without_lock.tables).not_to include("test_rake")
       end
     end
