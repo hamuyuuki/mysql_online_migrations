@@ -1,6 +1,14 @@
 require "spec_helper"
 
 describe "Migration Tasks" do
+  let(:migrator) do
+    if ActiveRecord::VERSION::MAJOR >= 6
+      ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate", ActiveRecord::SchemaMigration)
+    else
+      ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate")
+    end
+  end
+
   after(:each) do
     @adapter_without_lock.drop_table :test_rake rescue nil
     clear_version
@@ -9,7 +17,7 @@ describe "Migration Tasks" do
   context 'db:migrate' do
     it "creates the expected column" do
       expect(@adapter_without_lock.tables).not_to include("test_rake")
-      ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate", ActiveRecord::Base.connection.schema_migration).migrate
+      migrator.migrate
       expect(@adapter_without_lock.tables).to include("test_rake")
     end
   end
@@ -23,14 +31,14 @@ describe "Migration Tasks" do
 
     context 'db:rollback' do
       it "drops the expected table" do
-        ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate", ActiveRecord::Base.connection.schema_migration).rollback(1)
+        migrator.rollback(1)
         expect(@adapter_without_lock.tables).not_to include("test_rake")
       end
     end
 
     context 'db:migrate:down' do
       it "drops the expected table" do
-        ActiveRecord::MigrationContext.new("spec/fixtures/db/migrate", ActiveRecord::Base.connection.schema_migration).run(:down, 20140108194650)
+        migrator.run(:down, 20140108194650)
         expect(@adapter_without_lock.tables).not_to include("test_rake")
       end
     end
