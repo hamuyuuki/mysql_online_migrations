@@ -1,7 +1,7 @@
-dist: trusty
+dist: precise
 
-services:
-  - mysql
+addons:
+  mariadb: '10.0'
 
 language: ruby
 rvm:
